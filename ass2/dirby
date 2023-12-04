@@ -1,0 +1,62 @@
+#!/usr/bin/python3
+
+# COMP3311 22T3 Assignment 2
+# Print a list of movies directed by a given person
+
+import sys
+import psycopg2
+
+### Globals
+
+db = None
+usage = f"Usage: {sys.argv[0]} FullName"
+
+### Command-line args
+
+if len(sys.argv) < 2:
+   print(usage)
+   exit(1)
+
+# process the command-line args ...
+
+### Queries
+
+### Manipulating database
+
+try:
+   db = psycopg2.connect(f"dbname=ass2")
+   cur = db.cursor()
+   fullName = sys.argv[1]
+   query = f"""
+            select principals.job, movies.title, movies.year, people.name, people.id
+            from principals, movies, people
+            where principals.movie = movies.id and principals.person = people.id 
+            and people.name = '{fullName}'
+            order by movies.year
+            """
+   cur.execute(query)
+   res = cur.fetchall()
+   dirID = []
+   ID = []
+   for tup in res:
+      if tup[0] == 'director':
+         print(f"{tup[1]} ({tup[2]})")
+         dirID.append((tup[-1]))
+      ID.append((tup[-1]))
+
+   if len(ID) == 0:
+      print("No such person")
+   elif len(list(set(ID))) == 1 and len(list(set(dirID))) == 0:
+      print(f"{fullName} has not directed any movies")
+   elif len(list(set(ID))) >= 1 and len(list(set(dirID))) == 0:
+      print(f"None of the people called {fullName} has directed any films")
+
+   db.close()
+
+except Exception as err:
+   print("DB error: ", err)
+   exit(1)
+finally:
+   if db:
+      db.close()
+

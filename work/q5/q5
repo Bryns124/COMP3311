@@ -1,0 +1,59 @@
+#!/usr/bin/python3
+
+import sys
+import psycopg2
+import re
+
+# Helper functions (if any)
+
+# ... functions go here ...
+
+# Initial setup
+
+db = None
+cur = None
+
+if len(sys.argv) < 3:
+   print(f"Usage: {sys.argv[0]} Racecourse Date")
+   exit(1)
+track = sys.argv[1]
+date = sys.argv[2]
+
+validDate = re.compile("^\d{4}-\d{2}-\d{2}$")
+if not validDate.match(date):
+   print(f"Invalid date")
+   exit(1)
+
+try:
+   db = psycopg2.connect(f"dbname=racing")
+   cur = db.cursor()
+   queryRaceCourses = f"select name from racecourses where name = %s"
+   cur.execute(queryRaceCourses, [track])
+   res = cur.fetchall()
+   if len(res) == 0:
+      print("No such racecourse")
+   queryDate = f"select run_on from meetings where run_on = %s"
+   cur.execute(queryDate, [date])
+   res = cur.fetchall()
+   if len(res) == 0:
+      print("No such meeting")
+
+   print(f"Race meeting at {track} on {date}\n", end ='\n')
+   queryRaceResults = f"""select races.name, races.prize, races.length, horses.name, jockeys.name 
+   from races, horses, jockeys, runners, meetings, racecourses 
+   where runners.horse = horses.id and runners.race = races.id and runners.jockey = jockeys.id and races.part_of = meetings.id and racecourses.id = meetings.run_at
+   and (runners.finished=1 or runners.finished=2 or runners.finished = 3) and racecourses.name = %s and meetings.run_on = %s
+   order by races.prize"""
+   cur.execute(queryRaceResults, [track, date])
+   res = cur.fetchall()
+   for tup in res:
+      print(f"{tup[3]} ridden by {tup[4]} wins {tup[1]}")
+   db.close()
+
+except psycopg2.Error as err:
+   print("DB error: ", err)
+finally:
+   if db:
+      db.close()
+   if cur:
+       cur.close()

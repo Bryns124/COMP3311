@@ -1,0 +1,23 @@
+# COMP3311 22T3 Final Exam Q8
+# Python/Psycopg2 analysis
+
+(A)
+The code is computing and printing the mark for each of the courses in each of the terms for the students. At the end it computes an average.
+
+
+(B)
+The exception that has not been considered is if the database was unable to connect properly.
+
+
+(C)
+Execute would run 10 + 1 = 11 times.
+
+
+(D)
+select c.code, c.title, c.uoc, e.mark, distinct c.term
+from   Enrolments e join Courses c on c.id = e.course
+where  term = %s and student = %s order by term
+
+Essentially combining both the queries into 1 so that there would be less execute calls and thus being moer efficient.
+
+

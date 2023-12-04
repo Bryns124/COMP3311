@@ -1,0 +1,53 @@
+#!/usr/bin/python3
+
+# COMP3311 22T3 Assignment 2
+# Print a list of character roles played by an actor/actress
+
+import sys
+import psycopg2
+from helpers import makeDictQ4, printDictQ4_single, printDictQ4_multi
+
+### Globals
+
+db = None
+usage = f"Usage: {sys.argv[0]} FullName"
+
+### Command-line args
+
+if len(sys.argv) < 2:
+   print(usage)
+   exit(1)
+
+# process the command-line args ...
+
+### Queries
+
+### Manipulating database
+
+try:
+   db = psycopg2.connect(f"dbname=ass2")
+   cur = db.cursor()
+   name = sys.argv[1]
+   query = f"""
+            select people.id, people.name, playsrole.role, movies.title, movies.year, principals.job
+            from principals left outer join playsrole on playsrole.inmovie = principals.id, movies, people          
+            where principals.movie = movies.id and principals.person = people.id 
+            and people.name = '{name}'
+            order by people.id, movies.year, movies.title, playsrole.role;
+            """
+   cur.execute(query)
+   peopleDict = makeDictQ4(cur.fetchall())
+   if len(peopleDict.keys()) == 0:
+      print("No such person")
+   else:
+      if len(peopleDict.keys()) == 1:
+         printDictQ4_single(peopleDict)
+      else:
+         printDictQ4_multi(peopleDict, name)
+
+   db.close()
+except Exception as err:
+   print("DB error: ", err)
+finally:
+   if db:
+      db.close()

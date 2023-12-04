@@ -1,0 +1,4 @@
+
+                                                             ^
+DB error:  missing FROM-clause entry for table "countries"
+LINE 3: ...eft outer join releasedin on releasedin.country = countries....

@@ -1,0 +1,50 @@
+# COMP3311 22T3 Final Exam Q6
+# SQL schema from ER design
+
+(A) ER-mapping of subclasses
+crete table A (
+    id          integer not null
+    x           text
+    primary key (id)
+)
+
+create table B (
+    id          integer not null references A(id)
+    y           text
+    primary key (id)
+)
+
+create table Z (
+    c           integer not null references C(id)
+    z           text
+    primary key (c,z)
+)
+
+create table C (
+    id          integer not null references A(id)
+    z           text
+    primary key (id)
+)
+
+create table D (
+    id          integer not null references C(id)
+    w           text
+    primary key (id)
+)
+
+(B) Single-table-mapping of subclasses
+create table A (
+    id          integer not null
+    x           text
+    type        text not null check (type in ('B', 'C'))
+    y           text
+    z           text
+    primary key (id)
+    constraint CheckValidTypeData check ((type = 'B') or (type = 'C'))
+)
+create table D (
+    id          integer not null references A(id)
+    w           text
+    primary key (id)
+)
+

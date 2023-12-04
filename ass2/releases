@@ -1,0 +1,52 @@
+#!/usr/bin/python3
+
+# COMP3311 22T3 Assignment 2
+# Print a list of countries where a named movie was released
+
+import sys
+import psycopg2
+from helpers import printCountriesMakeDataQ2, validityCheckQ2
+import re
+
+### Globals
+
+db = None
+usage = f"Usage: {sys.argv[0]} 'MovieName' Year"
+
+### Command-line args
+
+if len(sys.argv) < 3:
+   print(usage)
+   exit(1)
+
+# process the command-line args ...
+
+### Queries
+
+### Manipulating database
+
+try:
+   db = psycopg2.connect(f"dbname=ass2")
+   cur = db.cursor()
+   movieTitle = sys.argv[1]
+   movieYear = sys.argv[2]
+   query = f"""
+            select movies.title, movies.year, countries.name 
+            from movies left outer join releasedin on movies.id = releasedin.movie, countries 
+            where releasedin.country = countries.code 
+            and movies.title = '{movieTitle}' and movies.year = '{movieYear}'
+            order by countries.name;
+            """
+   cur.execute(query)
+   res = cur.fetchall()
+   data = printCountriesMakeDataQ2(res, movieYear)
+   validityCheckQ2(data)
+
+   db.close()
+
+except Exception as err:
+   print("DB error: ", err)
+finally:
+   if db:
+      db.close()
+

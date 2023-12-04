@@ -1,0 +1,53 @@
+#!/usr/bin/python3
+
+# COMP3311 22T3 Assignment 2
+# Print info about one movie; may need to choose
+
+import sys
+import psycopg2
+from helpers import printPrincipalsQ5, executeQ5
+
+### Globals
+
+db = None
+usage = f"Usage: {sys.argv[0]} 'PartialMovieName'"
+
+### Command-line args
+
+if len(sys.argv) < 2:
+   print(usage)
+   exit(1)
+
+# process the command-line args ...
+
+### Queries
+
+### Manipulating database
+
+try:
+   db = psycopg2.connect(f"dbname=ass2")
+   cur = db.cursor()
+   partialMovie = sys.argv[1]
+   queryMovies = f"""
+                  select ROW_NUMBER() OVER(order by title, year) as movie_num, title, year 
+                  from movies where title ~* '{partialMovie}';
+                  """
+   cur.execute(queryMovies)
+   res = cur.fetchall()
+   if len(res) == 0:
+      print(f"No movie matching: '{partialMovie}'")
+   elif len(res) == 1:
+      executeQ5(res[0][1], res[0][2], cur)
+   else:
+      for tup in res:
+         print(f"{tup[0]}. {tup[1]} ({tup[2]})")
+      x = int(input("Which movie? "))
+      executeQ5(res[x-1][1], res[x-1][2], cur)
+
+   db.close()
+except Exception as err:
+   print("DB error: ", err)
+finally:
+   if db:
+      db.close()
+

@@ -1,0 +1,42 @@
+psql:ass1.sql:16: ERROR:  syntax error at or near ".."
+LINE 3: ...
+        ^
+psql:ass1.sql:23: ERROR:  syntax error at or near ".."
+LINE 3: ...
+        ^
+psql:ass1.sql:30: ERROR:  syntax error at or near ".."
+LINE 3: ...
+        ^
+psql:ass1.sql:37: ERROR:  syntax error at or near ".."
+LINE 3: ...
+        ^
+psql:ass1.sql:44: ERROR:  syntax error at or near ".."
+LINE 3: ...
+        ^
+psql:ass1.sql:51: ERROR:  syntax error at or near ".."
+LINE 3: ...
+        ^
+psql:ass1.sql:58: ERROR:  syntax error at or near ".."
+LINE 3: ...
+        ^
+psql:ass1.sql:65: ERROR:  syntax error at or near ".."
+LINE 3: ...
+        ^
+psql:ass1.sql:72: ERROR:  syntax error at or near ".."
+LINE 3: ...
+        ^
+psql:ass1.sql:79: ERROR:  syntax error at or near ".."
+LINE 3: ...
+        ^
+psql:ass1.sql:83: NOTICE:  type "abvrange" does not exist, skipping
+DROP TYPE
+CREATE TYPE
+psql:ass1.sql:91: ERROR:  syntax error at or near ".."
+LINE 4: ...
+        ^
+psql:ass1.sql:95: NOTICE:  type "beerdata" does not exist, skipping
+DROP TYPE
+CREATE TYPE
+psql:ass1.sql:103: ERROR:  syntax error at or near ".."
+LINE 4: ...
+        ^

@@ -1,0 +1,87 @@
+#!/usr/bin/python3
+# COMP3311 21T3 exam ... property finder
+
+import sys
+import psycopg2
+import re
+
+# define any local helper functions here
+
+### set up some globals
+
+usage = f"Usage: {sys.argv[0]} type maxPrice #beds #baths #cars\n"\
+f"type is one of Apartment, House, Townhouse\n"\
+"maxPrice is upper bound; #x = exact match; 0 means don't care"
+
+types = ["Apartment", "House", "Townhouse"]
+db = None
+
+### process command-line args
+
+argc = len(sys.argv)
+if argc < 6:
+  print(usage)
+  exit(1)
+ptype = sys.argv[1]
+if not ptype in types:
+  print(usage)
+  exit(1)
+digits = re.compile("^\d+$")
+for arg in sys.argv[2:5]:
+  if not digits.match(arg):
+    print(usage)
+    exit(1)
+
+maxPrice = int(sys.argv[2])
+nbeds = int(sys.argv[3])
+nbaths = int(sys.argv[4])
+ncars = int(sys.argv[5])
+
+# manipulate database
+
+try:
+  db = psycopg2.connect(f"dbname=property")
+  cur = db.cursor()
+  if ptype == types[0]:
+    queryApartment = f"""
+    select properties.id, properties.unit_no||'/'||properties.street_no||' '||streets.name||' '||streets.stype||' '||suburbs.name||' '||suburbs.postcode as prop_name,
+        features.feature, features.number, properties.list_price
+    from properties, streets, suburbs, features
+    where features.property = properties.id and properties.street = streets.id and streets.suburb = suburbs.id and
+        properties.sold_price is null and properties.list_price <= {maxPrice}
+    order by properties.list_price, properties.id;
+    """
+    cur.execute(queryApartment)
+    res = cur.fetchall()
+    actbeds = 0
+    actbaths = 0
+    actcars = 0
+    for tup in res:
+      feat = tup[2], tup[3]
+      if tup[2] == 'bedrooms':
+        actbeds = tup[3]
+      if tup[2] == 'bathrooms': 
+        actbaths = tup[3]
+      if tup[2] == 'carspaces': 
+        actcars = tup[3]
+    if (nbeds == 0 or nbeds == actbeds) and (nbaths == 0 or nbaths == actbaths) and (ncars == 0 or ncars == actcars):
+      print(f"#")
+  elif ptype == types[1] or ptype == types[2]:
+    queryHouse = f"""
+    select properties.id, properties.street_no||' '||streets.name||' '||streets.stype||' '||suburbs.name||' '||suburbs.postcode as prop_name,
+        features.feature, features.number, properties.list_price
+    from properties, streets, suburbs, features
+    where features.property = properties.id and properties.street = streets.id and streets.suburb = suburbs.id and
+        properties.sold_price is null and properties.list_price <= {maxPrice}
+    order by properties.list_price, properties.id;
+    """
+    cur.execute(queryHouse)
+    
+  db.close()
+
+except Exception as err:
+  print("DB error: ", err)
+finally:
+  if db:
+    db.close()
+
